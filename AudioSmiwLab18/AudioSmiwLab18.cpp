@@ -22,48 +22,54 @@ void echoZad1Transform(std::ifstream& input, std::ofstream& output, std::string 
     output.open(filename + "Zad1.raw", std::ios::binary);
 
     char sampleInput[2];
-    short int sample;
-    short int* actualSecond = new short int[44100]{ 0 };   // actual second of sound
-    short int* lastSecond = new short int[44100]{ 0 };     // last second of sound
+    short int sample;                                      // zmienna przechouwjaca 16 bitow
+    short int* actualSecond = new short int[44100]{ 0 };   // przechowuje aktualna sekunde
+    short int* lastSecond = new short int[44100]{ 0 };     // przechowuje ostatnia analizowana sekunde
 
     int i = 0;
     if (input.is_open()) {
-        // first second without echo loop
+        // pobranie pierwszej sekundy bez echa
         while (i < 44100 && input.read(sampleInput, sizeof(short int))) {
-            sample = sampleInput[0] << 8;
+                                        // pobranie dolnych i gornych bitow 
+            sample = sampleInput[0] << 8;  
             sample += sampleInput[1];
-            lastSecond[i++] = sample;
 
-            sampleInput[1] = sample;
+            lastSecond[i++] = sample; // zapisanie pobranych bitow do zm. przechowujacej ostatnia sekudne
+                                    
+                                      // zapisanie pobranych bitow do pliku wejsciowego
+            sampleInput[1] = sample;  
             sampleInput[0] = sample >> 8;
 
             output.write(sampleInput, sizeof(short int));
         }
-        // all with echo loop
+        // pobranie wszystkich sekund ktore beda zawierac echo
         i = 0;
         while (input.read(sampleInput, sizeof(short int))) {
-            if (i == 44100)
+            if (i == 44100) // sprawdzenie czy wczytano cala sekunde jesli tak to wyzerowanie           
                 i = 0;
-            sample = sampleInput[0] << 8;
+                                        
+                                        // pobranie dolnych i gornych bitow 
+            sample = sampleInput[0] << 8;  
             sample += sampleInput[1];
-            actualSecond[i] = sample;
 
-            // == transform ==
+            actualSecond[i] = sample;  // dodanie pobranych bitow do tablicy przechowujacej aktualna sekunde
 
-            sample += lastSecond[i];
+            // == transfromacja ==
 
-            // == transform end ==
-            lastSecond[i] = actualSecond[i];
-            sampleInput[1] = sample;
+            sample += lastSecond[i];    // dodanie do pobranych bitow przeprzednio pobranych bitow
+
+            // == koniec transformacji ==
+            lastSecond[i] = actualSecond[i];    // przypisanie aktualnej sekundy do ostatnej sekudny w celu skorzystania z niej w nastepnej petli
+            sampleInput[1] = sample;            // zapisanie przetworzonych danych do pliku
             sampleInput[0] = sample >> 8;
 
             output.write(sampleInput, sizeof(short int));
-            i++;
+            i++;  // inkrementacja licznika tablic przechowujacych sekund
         }
-        // last echo loop
+        // pobranie ostatniej sekundy i zapisanie do pliku bez echa
         i = 0;
         while (i < 44100) {
-            sample = lastSecond[i];
+            sample = lastSecond[i]; // 
             sampleInput[1] = sample;
             sampleInput[0] = sample >> 8;
 
@@ -83,23 +89,23 @@ void echoZad2Transform(std::ifstream& input, std::ofstream& output, std::string 
 
     char sampleInput[2];
     short int sample;
-    short int* actualSeconds = new short int[44100]{ 0 };   // actual second of sound
-    short int* firstEchoSeconds = new short int[44100]{ 0 };
-    short int* secondEchoSeconds = new short int[44100]{ 0 };
-    short int* thirdEchoSeconds = new short int[44100]{ 0 };
-    short int* fourthEchoSeconds = new short int[44100]{ 0 };
+    short int* actualSeconds = new short int[44100]{ 0 };   // aktualna sekunda dzwieku
+    short int* firstEchoSeconds = new short int[44100]{ 0 }; // pierwsze sekunda echa
+    short int* secondEchoSeconds = new short int[44100]{ 0 }; // drugia sekunda echa
+    short int* thirdEchoSeconds = new short int[44100]{ 0 };  // trzecia sekunda echa
+    short int* fourthEchoSeconds = new short int[44100]{ 0 }; // czwarta sekunda echa
 
 
-    int i = 0;
-    int echoCount = 0;
+    int i = 0; // licznik tablicy sekund
+    int echoCount = 0; // ilosc zapisanych ech
     if (input.is_open()) {
-        // first seconds without echo loop
+        // pobranie pierwszej sekundy identycznie jak w poprzednim zadaniu
         while (i < 44100 && input.read(sampleInput, sizeof(short int))) {
             sample = sampleInput[0] << 8;
             sample += sampleInput[1];
 
             actualSeconds[i] = sample;
-            firstEchoSeconds[i] = sample;
+            firstEchoSeconds[i] = sample; // dodanie do tablicy zawierajace pierwsze echo pobranych bitow
 
             sampleInput[1] = sample;
             sampleInput[0] = sample >> 8;
@@ -109,42 +115,43 @@ void echoZad2Transform(std::ifstream& input, std::ofstream& output, std::string 
         // all with echo loop
         i = 0;
         while (input.read(sampleInput, sizeof(short int))) {
-            if (i == 44100) {
+            if (i == 44100) {   // sprawdzenie czy pobrano ponad sekunde, jesli tak to wyzerowanie
                 i = 0;
             }
-            sample = sampleInput[0] << 8;
+            sample = sampleInput[0] << 8; // pobranie 16 bitow z pliku 
             sample += sampleInput[1];
-            actualSeconds[i] = sample;
+            actualSeconds[i] = sample;    // dodanie pobranych bitow do aktualnej sekundy
             // == transform ==
 
-            sample += fourthEchoSeconds[i];
-            sample += thirdEchoSeconds[i];
-            sample += secondEchoSeconds[i];
-            sample += firstEchoSeconds[i];
+            sample += fourthEchoSeconds[i]; // dodanie do pobranych bitow czwartego echa
+            sample += thirdEchoSeconds[i];  // dodanie do pobranych bitow trzeciego echa
+            sample += secondEchoSeconds[i]; // dodanie do pobranych bitow drugiego echa
+            sample += firstEchoSeconds[i];  // dodanie do pobranych bitow pierwszego echa
 
             // == transform end ==
-            fourthEchoSeconds[i] = thirdEchoSeconds[i];
-            thirdEchoSeconds[i] = secondEchoSeconds[i];
+            fourthEchoSeconds[i] = thirdEchoSeconds[i]; // dodanie do tablicy czwartego echa trzeciego echa
+            thirdEchoSeconds[i] = secondEchoSeconds[i]; // analogicznie dla poprzednich tablic zawierajacych echa
             secondEchoSeconds[i] = firstEchoSeconds[i];
             firstEchoSeconds[i] = actualSeconds[i];
 
-            sampleInput[1] = sample;
+            sampleInput[1] = sample;    // zapisanie zmodyfykowanych danych do pliku
             sampleInput[0] = sample >> 8;
 
             output.write(sampleInput, sizeof(short int));
             i++;
         }
 
-        // last four echo seconds loop
+        // ostantia sekunda dodanie czterech ech
         i = 0;
         int echoCount = 4;
         while (echoCount > 0) {
-            if (i == 44100) {
+            if (i == 44100) {   // sprawdzenie czy pobrano ponad sekunde, jesli tak to wyzerowanie
                 i = 0;
-                if (echoCount <= 4)
+                if (echoCount <= 4) // sprawdzenie czy nalezy zmniejszyc ilsoc ech
                     echoCount--;
             }
-            sample = 0;
+            sample = 0; // wyzerowanie zmmiennj wynikowej
+            // dodanie pozostalych ech do wyniku
             if (echoCount >= 4)
                 sample = fourthEchoSeconds[i];
             if (echoCount >= 3)
@@ -153,11 +160,12 @@ void echoZad2Transform(std::ifstream& input, std::ofstream& output, std::string 
                 sample = sample + secondEchoSeconds[i];
             if (echoCount >= 1) 
                 sample = sample + firstEchoSeconds[i];
+            // wyprowadzenie wyniku do pliku
             sampleInput[1] = sample;
             sampleInput[0] = sample >> 8;
 
             output.write(sampleInput, sizeof(short int));
-            i++;
+            i++; // inkrementacja indeksu tablicy sekund
         }
 
         input.close();
