@@ -9,7 +9,7 @@ int main()
 {
     std::ifstream rawInput;
     std::ofstream rawOutput;
-    std::string filename = "12";
+    std::string filename = "123";
     echoZad1Transform(rawInput, rawOutput, filename);
     echoZad2Transform(rawInput, rawOutput, filename);
     echoZad3Transform(rawInput, rawOutput, filename);
@@ -83,7 +83,6 @@ void echoZad2Transform(std::ifstream& input, std::ofstream& output, std::string 
 
     char sampleInput[2];
     short int sample;
-    short int echoSample;
     short int* actualSeconds = new short int[44100]{ 0 };   // actual second of sound
     short int* firstEchoSeconds = new short int[44100]{ 0 };
     short int* secondEchoSeconds = new short int[44100]{ 0 };
@@ -98,11 +97,16 @@ void echoZad2Transform(std::ifstream& input, std::ofstream& output, std::string 
         while (i < 44100 && input.read(sampleInput, sizeof(short int))) {
             sample = sampleInput[0] << 8;
             sample += sampleInput[1];
-            actualSeconds[i++] = sample;
+
+            actualSeconds[i] = sample;
+            firstEchoSeconds[i] = sample;
+            secondEchoSeconds[i] = sample;
+            thirdEchoSeconds[i] = sample;
+            fourthEchoSeconds[i] = sample;
 
             sampleInput[1] = sample;
             sampleInput[0] = sample >> 8;
-
+            i++;
             output.write(sampleInput, sizeof(short int));
         }
         // all with echo loop
@@ -110,33 +114,22 @@ void echoZad2Transform(std::ifstream& input, std::ofstream& output, std::string 
         while (input.read(sampleInput, sizeof(short int))) {
             if (i == 44100) {
                 i = 0;
-                if (echoCount <= 3 && echoCount >= 0)
-                    echoCount++;
             }
             sample = sampleInput[0] << 8;
             sample += sampleInput[1];
             actualSeconds[i] = sample;
-            echoSample = 0;
             // == transform ==
-            if (echoCount >= 4)
-                echoSample = fourthEchoSeconds[i];
-            if (echoCount >= 3) {
-                fourthEchoSeconds[i] = thirdEchoSeconds[i];
-                echoSample = echoSample + thirdEchoSeconds[i];
-            }
-            if (echoCount >= 2) {
-                thirdEchoSeconds[i] = secondEchoSeconds[i];
-                echoSample = echoSample + secondEchoSeconds[i];
-            }
-            if (echoCount >= 1) {
-                secondEchoSeconds[i] = firstEchoSeconds[i];
-                echoSample = echoSample + firstEchoSeconds[i];
-            }
-            firstEchoSeconds[i] = actualSeconds[i];
-            sample += echoSample;
 
+            sample += fourthEchoSeconds[i];
+            sample += thirdEchoSeconds[i];
+            sample += secondEchoSeconds[i];
+            sample += firstEchoSeconds[i];
 
             // == transform end ==
+            fourthEchoSeconds[i] = thirdEchoSeconds[i];
+            thirdEchoSeconds[i] = secondEchoSeconds[i];
+            secondEchoSeconds[i] = firstEchoSeconds[i];
+            firstEchoSeconds[i] = actualSeconds[i];
 
             sampleInput[1] = sample;
             sampleInput[0] = sample >> 8;
@@ -147,6 +140,7 @@ void echoZad2Transform(std::ifstream& input, std::ofstream& output, std::string 
 
         // last four echo seconds loop
         i = 0;
+        int echoCount = 4;
         while (echoCount > 0) {
             if (i == 44100) {
                 i = 0;
@@ -181,7 +175,7 @@ void echoZad2Transform(std::ifstream& input, std::ofstream& output, std::string 
 
 void echoZad3Transform(std::ifstream& input, std::ofstream& output, std::string filename) {
     input.open(filename + ".raw", std::ios::binary);
-    output.open(filename + "Zad1.raw", std::ios::binary);
+    output.open(filename + "Zad3.raw", std::ios::binary);
 
     char sampleInput[2];
     short int* lastHighByte = new short int[44100]{ 0 };     // last second of sound
