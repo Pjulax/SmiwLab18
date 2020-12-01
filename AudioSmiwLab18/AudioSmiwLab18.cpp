@@ -183,44 +183,47 @@ void echoZad3Transform(std::ifstream& input, std::ofstream& output, std::string 
     output.open(filename + "Zad3.raw", std::ios::binary);
 
     char sampleInput[2];
-    short int* lastHighByte = new short int[44100]{ 0 };     // last second of sound
-    short int* lastLowByte = new short int[44100]{ 0 };     // last second of sound
+    short int* lastHighByte = new short int[44100]{ 0 };     // tablica zawierajaca pierwsza polowke sekunde
+    short int* lastLowByte = new short int[44100]{ 0 };     // tablica zawierajaca druga polowke sekunde
 
     int i = 0;
     if (input.is_open()) {
-        // first second without echo loop
+        // pobranie pierwszej sekundy bez echa i zapisanie do odpowiedich polowek
         while (i < 44100 && input.read(sampleInput, sizeof(short int))) {
-            lastLowByte[i] = ((char)sampleInput[0] << 8) * 0.6f;
-            lastHighByte[i] += sampleInput[1] * 0.6f;
+            lastLowByte[i] = ((char)sampleInput[0] << 8) * 0.6f; // pobranie bitow i wyciszenie ich
+            lastHighByte[i] += sampleInput[1] * 0.6f; // pobranie bitow i wyciszenie ich
             i++;
-            output.write(sampleInput, sizeof(short int));
+            output.write(sampleInput, sizeof(short int)); // zapisanie do plikow pierwszej sekundy bez echa
         }
-        // all with echo loop
+        // pozostale sekundy
         i = 0;
         while (input.read(sampleInput, sizeof(short int))) {
-            if (i == 44100)
+            if (i == 44100) // sprawdzenie czy pobrano ponad sekunde, jesli tak to wyzerowanie
                 i = 0;
-            lastLowByte[i] = ((char)sampleInput[0] << 8) + lastLowByte[i] * 0.6f;
-            lastHighByte[i] = sampleInput[1] + lastHighByte[i] * 0.6f;
+            lastLowByte[i] = ((char)sampleInput[0] << 8) + lastLowByte[i] * 0.6f; // aktualizacja pierwszej polowki echa
+            lastHighByte[i] = sampleInput[1] + lastHighByte[i] * 0.6f;  // aktualizacja drugiej polowki echa
 
-            sampleInput[1] = lastHighByte[i];
+            sampleInput[1] = lastHighByte[i]; // pobranie echa do zmiennej wynikowej
             sampleInput[0] = lastLowByte[i];
 
             output.write(sampleInput, sizeof(short int));
-            i++;
+            i++; // inkremenctacja licznika sekundy
         }
-        // last echo loop
+        // ostatnia sekunda
         i = 0;
         while (i < 44100) {
-            if (i == 44100)
+            if (i == 44100) // sprawdzenie czy pobrano ponad sekunde, jesli tak to wyzerowanie
                 i = 0;
-            if (lastLowByte[i] <= 3 && lastHighByte[i] <= 3)
+            if (lastLowByte[i] <= 3 && lastHighByte[i] <= 3) // sprawdzenie czy echo jest dostatecznie nieslyszalne jesli tak to koniec petli
                 break;
-            lastLowByte[i] = lastLowByte[i] * 0.6f;
-            lastHighByte[i] = lastHighByte[i] * 0.6f;
+            lastLowByte[i] = lastLowByte[i] * 0.6f; // wyciszenie dolnej polowki echa
+            lastHighByte[i] = lastHighByte[i] * 0.6f; // wyciszenie gornej polowki echa
 
-            output.write(sampleInput, sizeof(short int));
-            i++;
+            sampleInput[1] = lastHighByte[i]; // pobranie echa do zmiennej wynikowej
+            sampleInput[0] = lastLowByte[i];
+
+            output.write(sampleInput, sizeof(short int)); // zapisanie wyniku do pliku
+            i++; // inkremenctacja licznika sekundy
         }
         input.close();
         output.close();
