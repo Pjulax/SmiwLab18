@@ -100,9 +100,6 @@ void echoZad2Transform(std::ifstream& input, std::ofstream& output, std::string 
 
             actualSeconds[i] = sample;
             firstEchoSeconds[i] = sample;
-            secondEchoSeconds[i] = sample;
-            thirdEchoSeconds[i] = sample;
-            fourthEchoSeconds[i] = sample;
 
             sampleInput[1] = sample;
             sampleInput[0] = sample >> 8;
@@ -223,51 +220,3 @@ void echoZad3Transform(std::ifstream& input, std::ofstream& output, std::string 
         delete[] lastHighByte;
     }
 }
-
-
-/*
-int i = 0;
-    if (rawInput.is_open()) {
-        while (i < 44100 && rawInput.read(sampleInput, sizeof(uint16_t))) {
-            sample = sampleInput[0] << 8;
-            sample += sampleInput[1];
-            actualSecond[i++] = sample;
-
-            sampleInput[1] = sample;
-            sampleInput[0] = sample >> 8;
-
-            rawOutput.write(sampleInput, sizeof(uint16_t));
-        }
-        i = 0;
-        while (rawInput.read(sampleInput, sizeof(uint16_t))) {
-            if (i == 44100)
-                i = 0;
-            sample = sampleInput[0] << 8;
-            sample += sampleInput[1];
-            actualSecond[i] = sample;
-
-            // == transform ==
-
-            sample += lastSecond[i];
-
-            // == transform end ==
-            lastSecond[i] = actualSecond[i];
-            sampleInput[1] = sample;
-            sampleInput[0] = sample >> 8;
-
-            rawOutput.write(sampleInput, sizeof(uint16_t));
-            i++;
-        }
-        i = 0;
-        while (i < 44100) {
-            sample = lastSecond[i];
-            sampleInput[1] = sample;
-            sampleInput[0] = sample >> 8;
-
-            rawOutput.write(sampleInput, sizeof(uint16_t));
-            i++;
-        }
-        rawInput.close();
-        rawOutput.close();
-    }
-*/
