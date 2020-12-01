@@ -1,25 +1,25 @@
 #include <iostream>
 #include <fstream>
 
-void echoZad1Transform(std::ifstream& input, std::ofstream& output);
-void echoZad2Transform(std::ifstream& input, std::ofstream& output);
-void echoZad3Transform(std::ifstream& input, std::ofstream& output);
+void echoZad1Transform(std::ifstream& input, std::ofstream& output, std::string filename);
+void echoZad2Transform(std::ifstream& input, std::ofstream& output, std::string filename);
+void echoZad3Transform(std::ifstream& input, std::ofstream& output, std::string filename);
 
 int main()
 {
     std::ifstream rawInput;
     std::ofstream rawOutput;
-
-    echoZad1Transform(rawInput, rawOutput);
-    echoZad2Transform(rawInput, rawOutput);
-    echoZad3Transform(rawInput, rawOutput);
+    std::string filename = "12";
+    echoZad1Transform(rawInput, rawOutput, filename);
+    echoZad2Transform(rawInput, rawOutput, filename);
+    echoZad3Transform(rawInput, rawOutput, filename);
 
     return 0;
 }
 
-void echoZad1Transform(std::ifstream& input, std::ofstream& output) {
-    input.open("12.raw", std::ios::binary);
-    output.open("12Zad1.raw", std::ios::binary);
+void echoZad1Transform(std::ifstream& input, std::ofstream& output, std::string filename) {
+    input.open(filename + ".raw", std::ios::binary);
+    output.open(filename + "Zad1.raw", std::ios::binary);
 
     char sampleInput[2];
     short int sample;
@@ -32,7 +32,7 @@ void echoZad1Transform(std::ifstream& input, std::ofstream& output) {
         while (i < 44100 && input.read(sampleInput, sizeof(short int))) {
             sample = sampleInput[0] << 8;
             sample += sampleInput[1];
-            actualSecond[i++] = sample;
+            lastSecond[i++] = sample;
 
             sampleInput[1] = sample;
             sampleInput[0] = sample >> 8;
@@ -77,9 +77,9 @@ void echoZad1Transform(std::ifstream& input, std::ofstream& output) {
     }
 }
 
-void echoZad2Transform(std::ifstream& input, std::ofstream& output) {
-    input.open("12.raw", std::ios::binary);
-    output.open("12Zad2.raw", std::ios::binary);
+void echoZad2Transform(std::ifstream& input, std::ofstream& output, std::string filename) {
+    input.open(filename + ".raw", std::ios::binary);
+    output.open(filename + "Zad2.raw", std::ios::binary);
 
     char sampleInput[2];
     short int sample;
@@ -179,9 +179,9 @@ void echoZad2Transform(std::ifstream& input, std::ofstream& output) {
     }
 }
 
-void echoZad3Transform(std::ifstream& input, std::ofstream& output) {
-    input.open("12.raw", std::ios::binary);
-    output.open("12Zad3.raw", std::ios::binary);
+void echoZad3Transform(std::ifstream& input, std::ofstream& output, std::string filename) {
+    input.open(filename + ".raw", std::ios::binary);
+    output.open(filename + "Zad1.raw", std::ios::binary);
 
     char sampleInput[2];
     short int* lastHighByte = new short int[44100]{ 0 };     // last second of sound
